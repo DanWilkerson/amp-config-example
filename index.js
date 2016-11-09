@@ -18,7 +18,7 @@ app.get('/gtm-analytics.config.json', (req, res) => {
   const cookieString = generateCookieString({
     name: '_ga',
     value: gaCookie,
-    domain: domain,
+    domain: domain.replace('www.', ''),
     path: '/',
     expires: new Date(1000 * 60 * 60 * 24 * 365 * 2 + (+new Date)).toGMTString()
   })
