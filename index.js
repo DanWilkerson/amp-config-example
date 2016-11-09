@@ -1,10 +1,10 @@
-'use strict';
+'use strict'
 const express = require('express')
 const cookieParser = require('cookie-parser')
 const crypto = require('crypto')
 const request = require('request')
 const app = express()
-const port = 3000;
+const port = 3000
 
 app.use(cookieParser())
 
@@ -31,7 +31,12 @@ app.get('/gtm-analytics.config.json', (req, res) => {
   // AMP-specific header
   res.setHeader('AMP-Access-Control-Allow-Source-Origin', 'https://' + domain)
 
-  // For increased performance, cache this instead
+  /** 
+   * This approach takes advantage of Google Tag Manager AMP Containers
+   * https://analytics.googleblog.com/2016/10/google-tag-manager-giving-mobile.html
+   * GTM returns properly formatted JSON for tags added in the interface, and
+   * we extend the JSON with our Client ID here. Using GTM with AMP is recommended
+   */
   request.get({
     url: `https://www.googletagmanager.com/amp.json?id=${containerId}&clientId=${clientId}`,
     json: true
@@ -39,13 +44,19 @@ app.get('/gtm-analytics.config.json', (req, res) => {
 
     if (err) data = {"vars": {}}  // Add additional error handling here
 
+    /**
+     * On a side note, we're only adding the client ID value here, but
+     * you could add other dynamic data, too, such as a User ID.
+     * Just be aware that you generally have to manually insert the new data into
+     * the responses property, which can be a bit of a pain. 
+     */
     data.vars.clientId = clientId
 
     data.requests = Object.keys(data.requests)
       .reduce((map, key) => {
   
         map[key] = data.requests[key].replace(stockCid, '${clientId}')
-        return map;
+        return map
 
       }, {})
 
@@ -55,6 +66,44 @@ app.get('/gtm-analytics.config.json', (req, res) => {
 
 })
 
+// Non-GTM example
+app.get('/analytics.config.json', (req, res) => {
+
+  const domain = req.headers.host.split(':')[0]
+  const gaCookie = req.cookies._ga || generateGaCookie(domain)
+  const clientId = parseClientIdFromGaCookie(gaCookie)
+  const cookieString = generateCookieString({
+    name: '_ga',
+    value: gaCookie,
+    domain: domain.replace('www.', ''),
+    path: '/',
+    expires: new Date(1000 * 60 * 60 * 24 * 365 * 2 + (+new Date)).toGMTString()
+  })
+
+  res.set('Set-Cookie', cookieString)
+  res.setHeader('Access-Control-Allow-Origin', 'https://cdn.ampproject.org')
+  res.setHeader('Access-Control-Expose-Headers', 'AMP-Access-Control-Allow-Source-Origin')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  // AMP-specific header
+  res.setHeader('AMP-Access-Control-Allow-Source-Origin', 'https://' + domain)
+
+  /** 
+   * This counts on extending the default Google Analytics component
+   * (<amp-analytics type="googleanalytics"></amp-analytics>)
+   * If you'd like to roll your own configuration instead of using the
+   * prepared defaults, do this here as well. For more, see:
+   * https://www.ampproject.org/docs/reference/components/amp-analytics#configuration
+   *
+   * You can set additional variables here, too - see the note in the GTM example
+   * above for some ideas.
+   */
+  res.json({
+    "vars": {
+      "clientId": clientId
+    }
+  })
+
+})
 app.listen(port, (err) => {
 
   if (err) return console.log(err)
@@ -90,7 +139,7 @@ function generateGaClientId() {
 
 function generateCookieString(config) {
 
-  let base = [[config.name, config.value]];
+  let base = [[config.name, config.value]]
   
   ['domain', 'path', 'expires'].forEach(opt => {
 
