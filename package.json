@@ -1,0 +1,35 @@
+{
+  "name": "amp-example-passthrough-config",
+  "version": "1.0.0",
+  "description": "Example of configuring a server to deliver a modified remote configuration for amp analytics",
+  "main": "test.js",
+  "dependencies": {
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.0",
+    "request": "^2.78.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DanWilkerson/amp-config-example"
+  },
+  "keywords": [
+    "amp",
+    "google",
+    "analytics",
+    "google",
+    "tag",
+    "manager",
+    "remote",
+    "config"
+  ],
+  "author": "Dan Wilkerson <dwilkerson@lunametrics.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DanWilkerson/amp-config-example/issues"
+  },
+  "homepage": "https://github.com/DanWilkerson/amp-config-example"
+}
