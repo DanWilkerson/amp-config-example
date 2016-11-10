@@ -1,7 +1,6 @@
 'use strict'
 const express = require('express')
 const cookieParser = require('cookie-parser')
-const crypto = require('crypto')
 const request = require('request')
 const app = express()
 const port = 3000
