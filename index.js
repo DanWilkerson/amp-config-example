@@ -139,7 +139,7 @@ function generateGaClientId() {
 
 function generateCookieString(config) {
 
-  let base = [[config.name, config.value]]
+  let base = [[config.name, config.value]];
   
   ['domain', 'path', 'expires'].forEach(opt => {
 
