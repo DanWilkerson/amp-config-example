@@ -10,7 +10,6 @@ app.use(cookieParser())
 // GTM passthrough example
 app.get('/gtm-analytics.config.json', (req, res) => {
 
-  const containerId = 'GTM-PZM2M3'
   const domain = req.headers.host.split(':')[0]
   const gaCookie = req.cookies._ga || generateGaCookie(domain)
   const clientId = parseClientIdFromGaCookie(gaCookie)
@@ -23,12 +22,14 @@ app.get('/gtm-analytics.config.json', (req, res) => {
   })
   const stockCid = 'CLIENT_ID(AMP_ECID_GOOGLE)'
 
-  res.set('Set-Cookie', cookieString)
+  res.setHeader('Set-Cookie', cookieString)
+  // You may wish to set this dynamically - only one is allowed and it cannot
+  // be a wildcard '*' when using Allow-Credentials
   res.setHeader('Access-Control-Allow-Origin', 'https://cdn.ampproject.org')
   res.setHeader('Access-Control-Expose-Headers', 'AMP-Access-Control-Allow-Source-Origin')
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   // AMP-specific header
-  res.setHeader('AMP-Access-Control-Allow-Source-Origin', 'https://' + domain)
+  res.setHeader('AMP-Access-Control-Allow-Source-Origin', 'http://' + domain)
 
   /** 
    * This approach takes advantage of Google Tag Manager AMP Containers
@@ -37,7 +38,8 @@ app.get('/gtm-analytics.config.json', (req, res) => {
    * we extend the JSON with our Client ID here. Using GTM with AMP is recommended
    */
   request.get({
-    url: `https://www.googletagmanager.com/amp.json?id=${containerId}&clientId=${clientId}`,
+    url: 'https://www.googletagmanager.com/amp.json',
+    qs: req.query,
     json: true
   }, (err, response, data) => {
 
@@ -47,7 +49,7 @@ app.get('/gtm-analytics.config.json', (req, res) => {
      * On a side note, we're only adding the client ID value here, but
      * you could add other dynamic data, too, such as a User ID.
      * Just be aware that you generally have to manually insert the new data into
-     * the responses property, which can be a bit of a pain. 
+     * the 'responses' properties returned by GTM, which can be a bit of a pain. 
      */
     data.vars.clientId = clientId
 
@@ -79,12 +81,14 @@ app.get('/analytics.config.json', (req, res) => {
     expires: new Date(1000 * 60 * 60 * 24 * 365 * 2 + (+new Date)).toGMTString()
   })
 
-  res.set('Set-Cookie', cookieString)
+  res.setHeader('Set-Cookie', cookieString)
+  // You may wish to set this dynamically - only one is allowed and it cannot
+  // be a wildcard '*' when using Allow-Credentials
   res.setHeader('Access-Control-Allow-Origin', 'https://cdn.ampproject.org')
   res.setHeader('Access-Control-Expose-Headers', 'AMP-Access-Control-Allow-Source-Origin')
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   // AMP-specific header
-  res.setHeader('AMP-Access-Control-Allow-Source-Origin', 'https://' + domain)
+  res.setHeader('AMP-Access-Control-Allow-Source-Origin', 'http://' + domain)
 
   /** 
    * This counts on extending the default Google Analytics component
