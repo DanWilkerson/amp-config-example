@@ -28,8 +28,8 @@ app.get('/gtm-analytics.config.json', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', 'https://cdn.ampproject.org')
   res.setHeader('Access-Control-Expose-Headers', 'AMP-Access-Control-Allow-Source-Origin')
   res.setHeader('Access-Control-Allow-Credentials', 'true')
-  // AMP-specific header
-  res.setHeader('AMP-Access-Control-Allow-Source-Origin', 'http://' + domain)
+  // AMP-specific header, check your protocol
+  res.setHeader('AMP-Access-Control-Allow-Source-Origin', 'https://' + domain)
 
   /** 
    * This approach takes advantage of Google Tag Manager AMP Containers
