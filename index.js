@@ -20,7 +20,7 @@ app.get('/gtm-analytics.config.json', (req, res) => {
     path: '/',
     expires: new Date(1000 * 60 * 60 * 24 * 365 * 2 + (+new Date)).toGMTString()
   })
-  const stockCid = 'CLIENT_ID(AMP_ECID_GOOGLE)'
+  const stockCidRegex = /CLIENT_ID\([^)]*\)/g
 
   res.setHeader('Set-Cookie', cookieString)
   // You may wish to set this dynamically - only one is allowed and it cannot
@@ -31,7 +31,7 @@ app.get('/gtm-analytics.config.json', (req, res) => {
   // AMP-specific header, check your protocol
   res.setHeader('AMP-Access-Control-Allow-Source-Origin', 'https://' + domain)
 
-  /** 
+  /**
    * This approach takes advantage of Google Tag Manager AMP Containers
    * https://analytics.googleblog.com/2016/10/google-tag-manager-giving-mobile.html
    * GTM returns properly formatted JSON for tags added in the interface, and
@@ -49,14 +49,14 @@ app.get('/gtm-analytics.config.json', (req, res) => {
      * On a side note, we're only adding the client ID value here, but
      * you could add other dynamic data, too, such as a User ID.
      * Just be aware that you generally have to manually insert the new data into
-     * the 'responses' properties returned by GTM, which can be a bit of a pain. 
+     * the 'responses' properties returned by GTM, which can be a bit of a pain.
      */
     data.vars.clientId = clientId
 
     data.requests = Object.keys(data.requests)
       .reduce((map, key) => {
-  
-        map[key] = data.requests[key].replace(stockCid, '${clientId}')
+
+        map[key] = data.requests[key].replace(stockCidRegex, '${clientId}')
         return map
 
       }, {})
@@ -90,7 +90,7 @@ app.get('/analytics.config.json', (req, res) => {
   // AMP-specific header
   res.setHeader('AMP-Access-Control-Allow-Source-Origin', 'http://' + domain)
 
-  /** 
+  /**
    * This counts on extending the default Google Analytics component
    * (<amp-analytics type="googleanalytics"></amp-analytics>)
    * If you'd like to roll your own configuration instead of using the
@@ -118,7 +118,7 @@ app.listen(port, (err) => {
 
 function parseClientIdFromGaCookie(gaCookie) {
 
-  return gaCookie.split('.').slice(-2).join('.')  
+  return gaCookie.split('.').slice(-2).join('.')
 
 }
 
@@ -126,7 +126,7 @@ function generateGaCookie(host) {
 
   return [
     'GA1',
-     host.replace('www.', '').split('.').length, 
+     host.replace('www.', '').split('.').length,
      generateGaClientId()
   ].join('.')
 
@@ -144,7 +144,7 @@ function generateGaClientId() {
 function generateCookieString(config) {
 
   let base = [[config.name, config.value]];
-  
+
   ['domain', 'path', 'expires'].forEach(opt => {
 
     if (isDefined_(config[opt])) base.push([opt, config[opt]])
