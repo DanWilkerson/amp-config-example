@@ -12,7 +12,7 @@ app.get('/gtm-analytics.config.json', (req, res) => {
 
     const domain = req.headers.host.split(':')[0]
     const referer = getReferer(request);
-    const gaCookie = req.cookies._ga || generateGaCookie(domain)
+    const gaCookie = req.cookies.get('_ga') || generateGaCookie(domain)
     const clientId = parseClientIdFromGaCookie(gaCookie)
     const cookieString = generateCookieString({
         name: '_ga',
